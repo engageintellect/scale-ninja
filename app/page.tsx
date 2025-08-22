@@ -75,7 +75,7 @@ export default function Page() {
         pts = buildHex5(keyPc, selectedBox, selectedScale);
       } else if (selectedMode === "caged") {
         pts = buildCAGED(keyPc, selectedScale, selectedCAGEDShape);
-      }
+      }   
     }
     
     const minF = Math.min(...pts.map((p) => p.fret));

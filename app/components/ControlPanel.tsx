@@ -115,13 +115,13 @@ export function ControlPanel({
             <button
               key={scale}
               onClick={() => setSelectedScale(scale)}
-              className={`px-4 py-2 rounded text-sm font-medium transition-all duration-200 capitalize transform hover:scale-105 active:scale-95 ${
+              className={`px-4 py-2 rounded text-sm font-medium transition-all duration-200 transform hover:scale-105 active:scale-95 ${
                 selectedScale === scale
                   ? "bg-emerald-500 text-white shadow-lg"
                   : "bg-neutral-700 text-neutral-200 hover:bg-neutral-600 hover:shadow-md"
               }`}
             >
-              {scale}
+              {scale.charAt(0).toUpperCase() + scale.slice(1)}
             </button>
           ))}
         </Field>

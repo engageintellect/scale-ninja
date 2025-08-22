@@ -276,19 +276,18 @@ export function buildHex5(keyPc: number, box: Position5, scale: ScaleKind = "min
   return merged;
 }
 
-/** Enhanced CAGED system - shows both chord shapes (triad) and pentatonic scale notes */
+/** Enhanced CAGED system - shows chord tones within pentatonic patterns */
 export function buildCAGED(keyPc: number, scale: ScaleKind, shape: PositionCAGED): ScalePoint[] {
-  // Get the pentatonic notes using the correct scale type
+  // Get pentatonic pattern for the area
   const cagedToBoxMapping = {
-    0: { box: 0, anchorFret: 0 },   // Shape 1 (E-shape) = Box 1 at open position
-    1: { box: 1, anchorFret: 3 },   // Shape 2 (D-shape) = Box 2 at 3rd fret
-    2: { box: 2, anchorFret: 5 },   // Shape 3 (C-shape) = Box 3 at 5th fret
-    3: { box: 3, anchorFret: 7 },   // Shape 4 (A-shape) = Box 4 at 7th fret
-    4: { box: 4, anchorFret: 10 }   // Shape 5 (G-shape) = Box 5 at 10th fret
+    0: { box: 0, anchorFret: 0 },   // E-shape 
+    1: { box: 1, anchorFret: 3 },   // D-shape 
+    2: { box: 2, anchorFret: 5 },   // C-shape 
+    3: { box: 3, anchorFret: 7 },   // A-shape 
+    4: { box: 4, anchorFret: 10 }   // G-shape 
   };
   
   const mapping = cagedToBoxMapping[shape];
-  // Use the correct scale type for pentatonic patterns
   const pentNotes = buildPent5(keyPc, mapping.box as Position5, scale, mapping.anchorFret);
   
   // Define chord tone intervals based on scale type
@@ -296,16 +295,18 @@ export function buildCAGED(keyPc: number, scale: ScaleKind, shape: PositionCAGED
     ? [0, 4, 7]  // Major triad: root, major 3rd, perfect 5th
     : [0, 3, 7]; // Minor triad: root, minor 3rd, perfect 5th
   
+  // Simple approach: highlight all chord tones (1, 3, 5) in the pentatonic pattern
   return pentNotes.map(note => {
     const interval = (note.pc - keyPc + 12) % 12;
     const isChordTone = triadIntervals.includes(interval);
     
     return {
       ...note,
-      isChordTone // Add flag to identify chord tones vs scale tones
+      isChordTone
     };
   });
 }
+
 
 /** Build full-neck set (all positions) */
 export function buildFullNeck(
