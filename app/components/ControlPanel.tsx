@@ -111,7 +111,9 @@ export function ControlPanel({
 
         {/* Scale Selection */}
         <Field label="Scale">
-          {(["major", "minor"] as ScaleKind[]).map((scale) => (
+          {(selectedMode === "3nps" 
+            ? ["major", "minor", "harmonic_minor", "melodic_minor"] as ScaleKind[]
+            : ["major", "minor"] as ScaleKind[]).map((scale) => (
             <button
               key={scale}
               onClick={() => setSelectedScale(scale)}
@@ -121,7 +123,9 @@ export function ControlPanel({
                   : "bg-neutral-700 text-neutral-200 hover:bg-neutral-600 hover:shadow-md"
               }`}
             >
-              {scale.charAt(0).toUpperCase() + scale.slice(1)}
+              {scale === "harmonic_minor" ? "Harmonic Minor" : 
+               scale === "melodic_minor" ? "Melodic Minor" : 
+               scale.charAt(0).toUpperCase() + scale.slice(1)}
             </button>
           ))}
         </Field>

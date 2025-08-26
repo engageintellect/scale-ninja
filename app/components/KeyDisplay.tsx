@@ -41,10 +41,12 @@ export function KeyDisplay({
       // Relative minor is 3 semitones down (9 semitones up in 12-tone system)
       const relativeIndex = (keyIndex + 9) % 12;
       return noteNames[relativeIndex];
-    } else {
+    } else if (scale === "minor" || scale === "harmonic_minor" || scale === "melodic_minor") {
       // Relative major is 3 semitones up
       const relativeIndex = (keyIndex + 3) % 12;
       return noteNames[relativeIndex];
+    } else {
+      return key; // Fallback
     }
   };
 
@@ -61,6 +63,10 @@ export function KeyDisplay({
     
     const formula = scale === "major" 
       ? "1 - 2 - 3 - 4 - 5 - 6 - 7"
+      : scale === "harmonic_minor"
+      ? "1 - 2 - ♭3 - 4 - 5 - ♭6 - 7"
+      : scale === "melodic_minor"
+      ? "1 - 2 - ♭3 - 4 - 5 - 6 - 7"
       : "1 - 2 - ♭3 - 4 - 5 - ♭6 - ♭7";
     
     return { notes, formula };

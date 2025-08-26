@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Header } from "./components/Header";
 import { ControlPanel } from "./components/ControlPanel";
 import { KeyDisplay } from "./components/KeyDisplay";
 import { Fretboard } from "./components/Fretboard";
 import { Footer } from "./components/Footer";
-import { ScaleKind, Position, Position5, PositionCAGED, ScalePoint } from "./components/types";
+import { ScaleKind, Position, Position5, PositionCAGED, ScalePoint, SCALE_STEPS } from "./components/types";
 import {
   keyToPc,
   build3NPS,
@@ -33,6 +33,13 @@ export default function Page() {
   const [useFlats, setUseFlats] = useState(false);
   const [fullNeck, setFullNeck] = useState(false);
 
+  // Auto-switch scale when changing modes if harmonic_minor or melodic_minor is selected but not in 3NPS mode
+  useEffect(() => {
+    if ((selectedScale === "harmonic_minor" || selectedScale === "melodic_minor") && selectedMode !== "3nps") {
+      setSelectedScale("minor");
+    }
+  }, [selectedMode, selectedScale]);
+
   const keyPc = keyToPc(selectedKey);
 
   const { points, minFret, maxFret } = useMemo(() => {
@@ -41,8 +48,8 @@ export default function Page() {
     if (fullNeck) {
       // Full neck mode: show all scale notes across the entire 24-fret range
       if (selectedMode === "3nps") {
-        // Use correct scale steps based on major/minor selection
-        const steps = selectedScale === "major" ? [0, 2, 4, 5, 7, 9, 11] : [0, 2, 3, 5, 7, 8, 10];
+        // Use correct scale steps based on selected scale type
+        const steps = SCALE_STEPS[selectedScale];
         pts = buildFullNeckScale(keyPc, steps, selectedScale);
       } else if (selectedMode === "pent5") {
         // Use pentatonic steps for complete neck coverage

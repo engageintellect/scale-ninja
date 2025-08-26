@@ -21,14 +21,16 @@ An interactive web application for visualizing and learning guitar scales across
 
 ### 🎼 **Scale Types & Modes**
 - **Major (Ionian) and Natural Minor (Aeolian)** scales
+- **Harmonic Minor** - Minor scale with natural 7th (1-2-♭3-4-5-♭6-7) - Available in 3NPS mode only
+- **Melodic Minor** - Minor scale with natural 6th and 7th (1-2-♭3-4-5-6-7) - Available in 3NPS mode only
 - **Minor Pentatonic** (5 boxes) with authentic note patterns
 - **Minor Hexatonic** (Minor Pentatonic + 2nd degree)
 - **Multiple Viewing Modes**:
   - **CAGED System** - 5 chord shapes with triad chord tones highlighted over pentatonic patterns
   - **Pentatonic Boxes** - 5 classic pentatonic positions
-  - **3 Notes Per String (3NPS)** - 7 modal positions (Ionian through Locrian)
+  - **3 Notes Per String (3NPS)** - 7 modal positions (Ionian through Locrian) + Harmonic/Melodic Minor
   - **Hexatonic Boxes** - 5 pentatonic boxes with added 2nd degree
-  - **Full Neck View** - All notes in the scale across the entire fretboard
+  - **Full Neck View** - All notes in the scale across the entire fretboard (works with all scale types)
 
 ### 🎯 **Smart Controls**
 - **12 Musical Keys** with enharmonic equivalents (C, C#/Db, D, etc.)
@@ -92,12 +94,14 @@ An interactive web application for visualizing and learning guitar scales across
 ## Usage
 
 1. **Select a Key**: Choose from all 12 musical keys with enharmonic equivalents
-2. **Choose a Scale**: Toggle between Major and Minor scales
+2. **Choose a Scale**: 
+   - Major and Minor scales (available in all modes)
+   - Harmonic Minor and Melodic Minor (3NPS mode only)
 3. **Select View Mode**:
-   - 3NPS: Shows 3-notes-per-string patterns (7 positions)
+   - 3NPS: Shows 3-notes-per-string patterns (7 positions) + supports all scale types
    - Full Neck: Displays all notes in the scale across the entire fretboard
-   - Pentatonic: Shows 5 pentatonic box positions
-   - Hexatonic: Shows pentatonic boxes with added 2nd degree
+   - Pentatonic: Shows 5 pentatonic box positions (Major/Minor only)
+   - Hexatonic: Shows pentatonic boxes with added 2nd degree (Major/Minor only)
 4. **Customize Display**:
    - Toggle between note names and scale degrees
    - Switch between sharp (#) and flat (♭) notation

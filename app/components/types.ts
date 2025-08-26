@@ -1,6 +1,6 @@
 /** Type definitions and constants for Scale Ninja */
 
-export type ScaleKind = "major" | "minor";
+export type ScaleKind = "major" | "minor" | "harmonic_minor" | "melodic_minor";
 export type Position = 0 | 1 | 2 | 3 | 4 | 5 | 6; // Ionian..Locrian (3NPS)
 export type Position5 = 0 | 1 | 2 | 3 | 4; // 5-box sets
 export type PositionCAGED = 0 | 1 | 2 | 3 | 4; // C, A, G, E, D shapes
@@ -45,6 +45,8 @@ export const OPEN_STRINGS_PC = OPEN_STRINGS_MIDI.map(
 export const SCALE_STEPS: Record<ScaleKind, number[]> = {
   major: [0, 2, 4, 5, 7, 9, 11], // Ionian
   minor: [0, 2, 3, 5, 7, 8, 10], // Aeolian (natural minor)
+  harmonic_minor: [0, 2, 3, 5, 7, 8, 11], // Harmonic minor (minor with natural 7th)
+  melodic_minor: [0, 2, 3, 5, 7, 9, 11], // Melodic minor (minor with natural 6th and 7th)
 };
 
 // Pentatonic and hexatonic sets for 5-box modes
