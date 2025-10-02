@@ -14,7 +14,7 @@ import {
 interface KeyDisplayProps {
   selectedKey: string;
   selectedScale: ScaleKind;
-  selectedMode: "3nps" | "full" | "pent5" | "hex5" | "caged";
+  selectedMode: "3nps" | "full" | "pent5" | "hex5" | "caged" | "bonamassa";
   selectedPosition: Position;
   selectedBox: Position5;
   selectedCAGEDShape: PositionCAGED;
@@ -41,7 +41,7 @@ export function KeyDisplay({
       // Relative minor is 3 semitones down (9 semitones up in 12-tone system)
       const relativeIndex = (keyIndex + 9) % 12;
       return noteNames[relativeIndex];
-    } else if (scale === "minor" || scale === "harmonic_minor" || scale === "melodic_minor") {
+    } else if (scale === "minor" || scale === "harmonic_minor" || scale === "melodic_minor" || scale === "blues") {
       // Relative major is 3 semitones up
       const relativeIndex = (keyIndex + 3) % 12;
       return noteNames[relativeIndex];
@@ -67,6 +67,8 @@ export function KeyDisplay({
       ? "1 - 2 - ♭3 - 4 - 5 - ♭6 - 7"
       : scale === "melodic_minor"
       ? "1 - 2 - ♭3 - 4 - 5 - 6 - 7"
+      : scale === "blues"
+      ? "1 - ♭3 - 4 - ♭5 - 5 - ♭7"
       : "1 - 2 - ♭3 - 4 - 5 - ♭6 - ♭7";
     
     return { notes, formula };
@@ -155,6 +157,18 @@ export function KeyDisplay({
           notes
         };
       }
+    } else if (selectedMode === "bonamassa") {
+      // Bonamassa blues: 1, 2, ♭3, 3, 4, ♭5, 5, 6, ♭7
+      const bonamassaSteps = [0, 2, 3, 4, 5, 6, 7, 9, 10];
+      const notes = bonamassaSteps.map(step => {
+        const noteIndex = (keyIndex + step) % 12;
+        return noteNames[noteIndex];
+      });
+      return {
+        formula: "1 - 2 - ♭3 - 3 - 4 - ♭5 - 5 - 6 - ♭7",
+        description: "Bonamassa Blues Scale",
+        notes
+      };
     } else {
       return {
         ...getScaleInfo(selectedKey, selectedScale),
@@ -207,7 +221,7 @@ export function KeyDisplay({
           <div className="text-right">
             <div className="text-lg font-semibold text-neutral-300">
               {selectedMode === "3nps" && `Position ${selectedPosition + 1}`}
-              {(selectedMode === "pent5" || selectedMode === "hex5") && `Box ${selectedBox + 1}`}
+              {(selectedMode === "pent5" || selectedMode === "hex5" || selectedMode === "bonamassa") && `Box ${selectedBox + 1}`}
               {selectedMode === "caged" && `${CAGED_LABELS[selectedCAGEDShape]}`}
               {selectedMode === "full" && "Full Neck"}
             </div>
@@ -215,6 +229,7 @@ export function KeyDisplay({
               {selectedMode === "3nps" && POSITION_LABELS[selectedPosition]}
               {selectedMode === "pent5" && "Pentatonic Scale"}
               {selectedMode === "hex5" && "Hexatonic Scale"}
+              {selectedMode === "bonamassa" && "Bonamassa Blues"}
               {selectedMode === "caged" && "CAGED System"}
               {selectedMode === "full" && "Complete Fretboard"}
             </div>
@@ -267,7 +282,7 @@ export function KeyDisplay({
           <div className="text-center border-x border-neutral-700 px-4">
             <div className="text-lg font-semibold text-neutral-300">
               {selectedMode === "3nps" && `Position ${selectedPosition + 1}`}
-              {(selectedMode === "pent5" || selectedMode === "hex5") && `Box ${selectedBox + 1}`}
+              {(selectedMode === "pent5" || selectedMode === "hex5" || selectedMode === "bonamassa") && `Box ${selectedBox + 1}`}
               {selectedMode === "caged" && `${CAGED_LABELS[selectedCAGEDShape]}`}
               {selectedMode === "full" && "Full Neck"}
             </div>
@@ -275,6 +290,7 @@ export function KeyDisplay({
               {selectedMode === "3nps" && POSITION_LABELS[selectedPosition]}
               {selectedMode === "pent5" && "Pentatonic"}
               {selectedMode === "hex5" && "Hexatonic"}
+              {selectedMode === "bonamassa" && "Bonamassa Blues"}
               {selectedMode === "caged" && "CAGED"}
               {selectedMode === "full" && "All Positions"}
             </div>

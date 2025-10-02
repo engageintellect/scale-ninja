@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { ScaleKind, ScalePoint, NOTE_NAMES_SHARP, NOTE_NAMES_FLAT, SCALE_STEPS, MINOR_PENT_STEPS, MINOR_HEX_STEPS } from './types';
+import { ScaleKind, ScalePoint, NOTE_NAMES_SHARP, NOTE_NAMES_FLAT, SCALE_STEPS, MINOR_PENT_STEPS, MINOR_HEX_STEPS, BONAMASSA_STEPS } from './types';
 import { audioEngine } from './AudioEngine';
 
 interface FretboardProps {
@@ -12,7 +12,7 @@ interface FretboardProps {
   scale: ScaleKind;
   labelMode: "note" | "degree";
   useFlats: boolean;
-  mode: "3nps" | "pent5" | "hex5" | "caged";
+  mode: "3nps" | "pent5" | "hex5" | "caged" | "bonamassa";
   fullNeck?: boolean;
 }
 
@@ -288,6 +288,8 @@ export function Fretboard({
               ? MINOR_PENT_STEPS
               : mode === "hex5"
               ? MINOR_HEX_STEPS
+              : mode === "bonamassa"
+              ? BONAMASSA_STEPS
               : SCALE_STEPS[scale];
           const label =
             labelMode === "degree"
@@ -300,18 +302,26 @@ export function Fretboard({
               : pcToName(p.pc);
 
           // In CAGED mode, make chord tones larger and with different styling
+          // In Bonamassa mode, make blue notes (♭5) stand out
           const isChordTone = p.isChordTone;
+          const isBlueNote = p.isBlueNote;
           const chordToneMultiplier = isChordTone && mode === "caged" ? 1.3 : 1;
           const adjustedBubbleR = bubbleR * chordToneMultiplier;
-          const borderStyle = isChordTone && mode === "caged" 
-            ? { border: '2px solid #fff', boxShadow: '0 0 8px rgba(255,255,255,0.5)' }
-            : {};
+          
+          let borderStyle = {};
+          if (isChordTone && mode === "caged") {
+            borderStyle = { border: '2px solid #fff', boxShadow: '0 0 8px rgba(255,255,255,0.5)' };
+          } else if (isBlueNote && mode === "bonamassa") {
+            borderStyle = { border: '2px solid #3b82f6', boxShadow: '0 0 8px rgba(59,130,246,0.5)' };
+          }
 
           return (
             <div
               key={i}
               className={`absolute -translate-x-1/2 -translate-y-1/2 flex items-center justify-center rounded-full text-neutral-100 font-semibold select-none cursor-pointer transition-all duration-200 hover:scale-110 hover:shadow-lg ${
-                isRoot ? "bg-emerald-500 hover:bg-emerald-400" : "bg-zinc-600/90 hover:bg-zinc-500/90"
+                isRoot ? "bg-emerald-500 hover:bg-emerald-400" : 
+                isBlueNote && mode === "bonamassa" ? "bg-blue-500 hover:bg-blue-400" :
+                "bg-zinc-600/90 hover:bg-zinc-500/90"
               }`}
               style={{ 
                 left: x, 

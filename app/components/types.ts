@@ -1,6 +1,6 @@
 /** Type definitions and constants for Scale Ninja */
 
-export type ScaleKind = "major" | "minor" | "harmonic_minor" | "melodic_minor";
+export type ScaleKind = "major" | "minor" | "harmonic_minor" | "melodic_minor" | "blues";
 export type Position = 0 | 1 | 2 | 3 | 4 | 5 | 6; // Ionian..Locrian (3NPS)
 export type Position5 = 0 | 1 | 2 | 3 | 4; // 5-box sets
 export type PositionCAGED = 0 | 1 | 2 | 3 | 4; // C, A, G, E, D shapes
@@ -47,6 +47,7 @@ export const SCALE_STEPS: Record<ScaleKind, number[]> = {
   minor: [0, 2, 3, 5, 7, 8, 10], // Aeolian (natural minor)
   harmonic_minor: [0, 2, 3, 5, 7, 8, 11], // Harmonic minor (minor with natural 7th)
   melodic_minor: [0, 2, 3, 5, 7, 9, 11], // Melodic minor (minor with natural 6th and 7th)
+  blues: [0, 3, 5, 6, 7, 10], // Blues scale (minor pent + ♭5)
 };
 
 // Pentatonic and hexatonic sets for 5-box modes
@@ -54,6 +55,8 @@ export const MINOR_PENT_STEPS = [0, 3, 5, 7, 10]; // 1 b3 4 5 b7
 export const MAJOR_PENT_STEPS = [0, 2, 4, 7, 9]; // 1 2 3 5 6
 export const MINOR_HEX_STEPS = [0, 2, 3, 5, 7, 10]; // 1 2 b3 4 5 b7
 export const MAJOR_HEX_STEPS = [0, 2, 4, 5, 7, 9]; // 1 2 3 4 5 6
+export const BLUES_STEPS = [0, 3, 5, 6, 7, 10]; // 1 b3 4 b5 5 b7 (blues scale)
+export const BONAMASSA_STEPS = [0, 2, 3, 4, 5, 6, 7, 9, 10]; // Extended blues with major/minor mix
 
 // Intervals between adjacent strings in semitones (E→A=5, A→D=5, D→G=5, G→B=4, B→e=5)
 export const STRING_INTERVALS = [5, 5, 5, 4, 5];
@@ -104,4 +107,5 @@ export interface ScalePoint {
   pc: number;       // pitch class 0-11
   degreeIdx: number; // index into the scale steps array
   isChordTone?: boolean; // true if this note is part of the chord triad (for CAGED mode)
+  isBlueNote?: boolean; // true if this is a blue note (♭5) in Bonamassa mode
 }

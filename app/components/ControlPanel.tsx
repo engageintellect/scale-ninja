@@ -15,8 +15,8 @@ interface ControlPanelProps {
   setSelectedKey: (key: string) => void;
   selectedScale: ScaleKind;
   setSelectedScale: (scale: ScaleKind) => void;
-  selectedMode: "3nps" | "pent5" | "hex5" | "caged";
-  setSelectedMode: (mode: "3nps" | "pent5" | "hex5" | "caged") => void;
+  selectedMode: "3nps" | "pent5" | "hex5" | "caged" | "bonamassa";
+  setSelectedMode: (mode: "3nps" | "pent5" | "hex5" | "caged" | "bonamassa") => void;
   selectedPosition: Position;
   setSelectedPosition: (position: Position) => void;
   selectedBox: Position5;
@@ -113,6 +113,8 @@ export function ControlPanel({
         <Field label="Scale">
           {(selectedMode === "3nps" 
             ? ["major", "minor", "harmonic_minor", "melodic_minor"] as ScaleKind[]
+            : selectedMode === "bonamassa"
+            ? ["blues"] as ScaleKind[]
             : ["major", "minor"] as ScaleKind[]).map((scale) => (
             <button
               key={scale}
@@ -124,7 +126,8 @@ export function ControlPanel({
               }`}
             >
               {scale === "harmonic_minor" ? "Harmonic Minor" : 
-               scale === "melodic_minor" ? "Melodic Minor" : 
+               scale === "melodic_minor" ? "Melodic Minor" :
+               scale === "blues" ? "Blues" :
                scale.charAt(0).toUpperCase() + scale.slice(1)}
             </button>
           ))}
@@ -137,11 +140,12 @@ export function ControlPanel({
             { value: "pent5", label: "Pentatonic" },
             { value: "3nps", label: "3NPS" },
             { value: "hex5", label: "Hexatonic" },
+            { value: "bonamassa", label: "Bonamassa Blues" },
           ].map(({ value, label }) => (
             <button
               key={value}
               onClick={() =>
-                setSelectedMode(value as "3nps" | "pent5" | "hex5" | "caged")
+                setSelectedMode(value as "3nps" | "pent5" | "hex5" | "caged" | "bonamassa")
               }
               className={`px-4 py-2 rounded text-sm font-medium transition-all duration-200 transform hover:scale-105 active:scale-95 ${
                 selectedMode === value
@@ -173,8 +177,8 @@ export function ControlPanel({
           </Field>
         )}
 
-        {/* Box Selection (for Pentatonic/Hexatonic modes) */}
-        {(selectedMode === "pent5" || selectedMode === "hex5") && (
+        {/* Box Selection (for Pentatonic/Hexatonic/Bonamassa modes) */}
+        {(selectedMode === "pent5" || selectedMode === "hex5" || selectedMode === "bonamassa") && (
           <Field label="Box">
             {Array.from({ length: 5 }, (_, i) => (
               <button

@@ -23,9 +23,9 @@ export class AudioEngine {
   /**
    * Play a note given its MIDI number
    * @param midiNote - MIDI note number (40 = E2, 64 = E4)
-   * @param duration - Duration in seconds (default: 1.2)
+   * @param duration - Duration in seconds (default: 0.8 for guitar pluck)
    */
-  async playNote(midiNote: number, duration: number = 1.2): Promise<void> {
+  async playNote(midiNote: number, duration: number = 0.8): Promise<void> {
     await this.initializeAudio();
     
     if (!this.audioContext) {
@@ -46,7 +46,7 @@ export class AudioEngine {
   }
 
   /**
-   * Create a realistic guitar sound using multiple oscillators and filtering
+   * Create a realistic guitar pluck sound with sharp attack and natural decay
    */
   private createGuitarSound(frequency: number, startTime: number, duration: number): void {
     if (!this.audioContext) return;
@@ -54,52 +54,50 @@ export class AudioEngine {
     // Master gain node
     const masterGain = this.audioContext.createGain();
     
-    // Low-pass filter to simulate guitar pickup and amp characteristics
+    // Guitar-specific filtering
     const filter = this.audioContext.createBiquadFilter();
     filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(3000, startTime); // Cut high frequencies
-    filter.Q.setValueAtTime(1, startTime);
+    filter.frequency.setValueAtTime(4000, startTime); // Brighter than before for pluck
+    filter.Q.setValueAtTime(0.7, startTime);
     
-    // High-pass filter to remove muddy low end
+    // High-pass to clean up low end
     const highPassFilter = this.audioContext.createBiquadFilter();
     highPassFilter.type = 'highpass';
-    highPassFilter.frequency.setValueAtTime(80, startTime);
+    highPassFilter.frequency.setValueAtTime(60, startTime);
     
-    // Connect filters
+    // Connect audio chain
     masterGain.connect(highPassFilter);
     highPassFilter.connect(filter);
     filter.connect(this.audioContext.destination);
 
-    // Create multiple harmonics for realistic guitar timbre
+    // Guitar harmonics - more realistic ratios and gains for plucked string
     const harmonics = [
-      { ratio: 1.0, gain: 0.8 },    // Fundamental
-      { ratio: 2.0, gain: 0.4 },    // Octave
-      { ratio: 3.0, gain: 0.2 },    // Perfect fifth
-      { ratio: 4.0, gain: 0.15 },   // Second octave
-      { ratio: 5.0, gain: 0.1 },    // Major third
-      { ratio: 6.0, gain: 0.08 },   // Perfect fifth
-      { ratio: 7.0, gain: 0.05 },   // Minor seventh
+      { ratio: 1.0, gain: 1.0, wave: 'triangle' },    // Fundamental - triangle for warmer tone
+      { ratio: 2.0, gain: 0.6, wave: 'sine' },        // Octave
+      { ratio: 3.0, gain: 0.3, wave: 'sine' },        // Perfect fifth
+      { ratio: 4.0, gain: 0.2, wave: 'sine' },        // Second octave
+      { ratio: 5.0, gain: 0.15, wave: 'sine' },       // Major third
+      { ratio: 6.0, gain: 0.1, wave: 'sine' },        // Perfect fifth
     ];
 
-    harmonics.forEach((harmonic, index) => {
+    harmonics.forEach((harmonic) => {
       const oscillator = this.audioContext!.createOscillator();
       const harmonicGain = this.audioContext!.createGain();
       
-      // Use different waveforms for different harmonics
-      oscillator.type = index === 0 ? 'sawtooth' : 'sine';
+      // Use triangle for fundamental, sine for harmonics (more guitar-like)
+      oscillator.type = harmonic.wave as OscillatorType;
       oscillator.frequency.setValueAtTime(frequency * harmonic.ratio, startTime);
       
       // Connect harmonic
       oscillator.connect(harmonicGain);
       harmonicGain.connect(masterGain);
       
-      // Individual harmonic envelope
+      // Guitar pluck envelope - sharp attack, quick decay
       harmonicGain.gain.setValueAtTime(0, startTime);
-      harmonicGain.gain.linearRampToValueAtTime(harmonic.gain * 0.3, startTime + 0.005); // Quick attack
-      harmonicGain.gain.exponentialRampToValueAtTime(harmonic.gain * 0.7, startTime + 0.02); // Peak
-      harmonicGain.gain.exponentialRampToValueAtTime(harmonic.gain * 0.4, startTime + 0.1); // Decay
-      harmonicGain.gain.setValueAtTime(harmonic.gain * 0.4, startTime + duration * 0.6); // Sustain
-      harmonicGain.gain.exponentialRampToValueAtTime(0.001, startTime + duration); // Release
+      harmonicGain.gain.linearRampToValueAtTime(harmonic.gain * 0.8, startTime + 0.001); // Instant attack
+      harmonicGain.gain.exponentialRampToValueAtTime(harmonic.gain * 0.4, startTime + 0.02); // Quick initial decay
+      harmonicGain.gain.exponentialRampToValueAtTime(harmonic.gain * 0.4, startTime + 0.4); // Faster decay
+      harmonicGain.gain.exponentialRampToValueAtTime(0.001, startTime + duration * 0.7); // Natural fade
       
       // Start and stop
       oscillator.start(startTime);
@@ -112,34 +110,34 @@ export class AudioEngine {
       };
     });
 
-    // Master envelope with guitar-like characteristics
+    // Master envelope - guitar pluck characteristics
     masterGain.gain.setValueAtTime(0, startTime);
-    masterGain.gain.linearRampToValueAtTime(0.8, startTime + 0.003); // Very quick attack like plucked string
-    masterGain.gain.exponentialRampToValueAtTime(0.6, startTime + 0.05); // Quick decay
-    masterGain.gain.exponentialRampToValueAtTime(0.3, startTime + 0.2); // Longer decay
-    masterGain.gain.setValueAtTime(0.3, startTime + duration * 0.5); // Sustain
+    masterGain.gain.linearRampToValueAtTime(0.6, startTime + 0.001); // Instant pluck attack
+    masterGain.gain.exponentialRampToValueAtTime(0.4, startTime + 0.02); // Quick decay
+    masterGain.gain.exponentialRampToValueAtTime(0.15, startTime + 0.08); // Continued decay
+    masterGain.gain.exponentialRampToValueAtTime(0.1, startTime + 0.5); // Sustain level
     masterGain.gain.exponentialRampToValueAtTime(0.001, startTime + duration); // Natural release
 
-    // Add slight vibrato for realism (after initial attack)
-    const vibratoLFO = this.audioContext.createOscillator();
-    const vibratoGain = this.audioContext.createGain();
+    // Add subtle filter modulation for pluck realism
+    const filterMod = this.audioContext.createOscillator();
+    const filterModGain = this.audioContext.createGain();
     
-    vibratoLFO.type = 'sine';
-    vibratoLFO.frequency.setValueAtTime(4.5, startTime); // 4.5 Hz vibrato
-    vibratoGain.gain.setValueAtTime(0, startTime);
-    vibratoGain.gain.setValueAtTime(0, startTime + 0.3); // No vibrato initially
-    vibratoGain.gain.linearRampToValueAtTime(2, startTime + duration * 0.8); // Gradual vibrato
+    filterMod.type = 'sine';
+    filterMod.frequency.setValueAtTime(8, startTime); // Subtle modulation
+    filterModGain.gain.setValueAtTime(0, startTime);
+    filterModGain.gain.linearRampToValueAtTime(50, startTime + 0.01); // Quick filter sweep
+    filterModGain.gain.exponentialRampToValueAtTime(0.1, startTime + 0.1); // Settle
     
-    vibratoLFO.connect(vibratoGain);
-    vibratoGain.connect(filter.frequency);
+    filterMod.connect(filterModGain);
+    filterModGain.connect(filter.frequency);
     
-    vibratoLFO.start(startTime);
-    vibratoLFO.stop(startTime + duration);
+    filterMod.start(startTime);
+    filterMod.stop(startTime + duration);
     
-    // Clean up vibrato
-    vibratoLFO.onended = () => {
-      vibratoLFO.disconnect();
-      vibratoGain.disconnect();
+    // Clean up
+    filterMod.onended = () => {
+      filterMod.disconnect();
+      filterModGain.disconnect();
       masterGain.disconnect();
       filter.disconnect();
       highPassFilter.disconnect();

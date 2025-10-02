@@ -14,6 +14,8 @@ import {
   buildHex5,
   buildCAGED,
   buildFullNeckScale,
+  buildBonamassaExtended,
+  buildBonamassaFullNeck,
 } from "./components/ScaleEngine";
 
 /** Tailwind-only • Player view (low-E at bottom) • Correct 3NPS • 7 positions
@@ -24,7 +26,7 @@ export default function Page() {
   const [selectedKey, setSelectedKey] = useState("A");
   const [selectedScale, setSelectedScale] = useState<ScaleKind>("minor");
   const [selectedMode, setSelectedMode] = useState<
-    "3nps" | "pent5" | "hex5" | "caged"
+    "3nps" | "pent5" | "hex5" | "caged" | "bonamassa"
   >("3nps");
   const [selectedPosition, setSelectedPosition] = useState<Position>(0);
   const [selectedBox, setSelectedBox] = useState<Position5>(0);
@@ -33,10 +35,13 @@ export default function Page() {
   const [useFlats, setUseFlats] = useState(false);
   const [fullNeck, setFullNeck] = useState(false);
 
-  // Auto-switch scale when changing modes if harmonic_minor or melodic_minor is selected but not in 3NPS mode
+  // Auto-switch scale when changing modes
   useEffect(() => {
     if ((selectedScale === "harmonic_minor" || selectedScale === "melodic_minor") && selectedMode !== "3nps") {
       setSelectedScale("minor");
+    }
+    if (selectedMode === "bonamassa" && selectedScale !== "blues") {
+      setSelectedScale("blues");
     }
   }, [selectedMode, selectedScale]);
 
@@ -50,19 +55,19 @@ export default function Page() {
       if (selectedMode === "3nps") {
         // Use correct scale steps based on selected scale type
         const steps = SCALE_STEPS[selectedScale];
-        pts = buildFullNeckScale(keyPc, steps, selectedScale);
+        pts = buildFullNeckScale(keyPc, steps);
       } else if (selectedMode === "pent5") {
         // Use pentatonic steps for complete neck coverage
         const steps = selectedScale === "major" ? [0, 2, 4, 7, 9] : [0, 3, 5, 7, 10];
-        pts = buildFullNeckScale(keyPc, steps, selectedScale);
+        pts = buildFullNeckScale(keyPc, steps);
       } else if (selectedMode === "hex5") {
         // Use hexatonic steps for complete neck coverage
         const steps = selectedScale === "major" ? [0, 2, 4, 5, 7, 9] : [0, 2, 3, 5, 7, 10];
-        pts = buildFullNeckScale(keyPc, steps, selectedScale);
+        pts = buildFullNeckScale(keyPc, steps);
       } else if (selectedMode === "caged") {
         // Use pentatonic steps for CAGED (since CAGED is based on pentatonic + chord tones)
         const steps = selectedScale === "major" ? [0, 2, 4, 7, 9] : [0, 3, 5, 7, 10];
-        pts = buildFullNeckScale(keyPc, steps, selectedScale);
+        pts = buildFullNeckScale(keyPc, steps);
         
         // Add chord tone information
         const triadIntervals = selectedScale === "major" ? [0, 4, 7] : [0, 3, 7];
@@ -71,6 +76,9 @@ export default function Page() {
           const isChordTone = triadIntervals.includes(interval);
           return { ...note, isChordTone };
         });
+      } else if (selectedMode === "bonamassa") {
+        // Use Bonamassa full neck pattern
+        pts = buildBonamassaFullNeck(keyPc);
       }
     } else {
       // Single mode: show selected position/box/shape
@@ -82,7 +90,9 @@ export default function Page() {
         pts = buildHex5(keyPc, selectedBox, selectedScale);
       } else if (selectedMode === "caged") {
         pts = buildCAGED(keyPc, selectedScale, selectedCAGEDShape);
-      }   
+      } else if (selectedMode === "bonamassa") {
+        pts = buildBonamassaExtended(keyPc, selectedBox);
+      }
     }
     
     const minF = Math.min(...pts.map((p) => p.fret));

@@ -9,6 +9,7 @@ import {
   MINOR_PENT_STEPS,
   MINOR_HEX_STEPS,
   MAJOR_HEX_STEPS,
+  BONAMASSA_STEPS,
   STRING_INTERVALS,
   OPEN_STRINGS_PC,
   ScalePoint,
@@ -133,8 +134,7 @@ export function buildNPerString(
 /** Build scale notes across the entire 24-fret neck for Full Neck mode */
 export function buildFullNeckScale(
   keyPc: number,
-  steps: number[],
-  scale: ScaleKind = "minor"
+  steps: number[]
 ): ScalePoint[] {
   const out: ScalePoint[] = [];
   
@@ -155,7 +155,8 @@ export function buildFullNeckScale(
             string: stringIndex,
             fret,
             pc: notePc,
-            degreeIdx
+            degreeIdx,
+            isChordTone: degreeIdx === 0 || degreeIdx === 2 || degreeIdx === 4
           });
           break; // Only add each fret position once
         }
@@ -276,6 +277,134 @@ export function buildHex5(keyPc: number, box: Position5, scale: ScaleKind = "min
   return merged;
 }
 
+/** Joe Bonamassa style blues patterns - combines minor pentatonic with strategic additions */
+export function buildBonamassa5(keyPc: number, box: Position5, anchorLowEFret = 5): ScalePoint[] {
+  // Check for problematic key/box combinations
+  const isProblematicCase = 
+    (keyPc === 1 && box === 1) ||  // C#/Db Box 2
+    (keyPc === 6 && box === 4) ||  // F#/Gb Box 5
+    (keyPc === 11 && box === 2);   // B Box 3
+  
+  const adjustedAnchor = isProblematicCase ? anchorLowEFret + 5 : anchorLowEFret;
+  
+  // Bonamassa uses extended patterns - start with 3-4 notes per string approach
+  // Use the full Bonamassa scale with strategic note density per string
+  const startDeg = (0 + box) % BONAMASSA_STEPS.length;
+  
+  // Build extended pattern with variable notes per string (3-4 notes)
+  const notesPerString = [3, 4, 3, 4, 3, 3]; // Varies by string for optimal fingering
+  const totalNotes = notesPerString.reduce((sum, n) => sum + n, 0);
+  
+  const firstPc = (keyPc + BONAMASSA_STEPS[startDeg]) % 12;
+  const firstFret = nearestFretForPcOnString(firstPc, 0, adjustedAnchor);
+  const out: ScalePoint[] = [];
+  let expectedFret = firstFret;
+  let noteIndex = 0;
+
+  for (let s = 0; s < 6; s++) {
+    const notesOnThisString = notesPerString[s];
+    
+    if (s > 0) {
+      // Move to next string: adjust expected fret by string interval
+      expectedFret -= STRING_INTERVALS[s - 1];
+    }
+
+    for (let n = 0; n < notesOnThisString && noteIndex < totalNotes; n++) {
+      const d = (startDeg + noteIndex) % BONAMASSA_STEPS.length;
+      const pc = (keyPc + BONAMASSA_STEPS[d]) % 12;
+      
+      if (n > 0) {
+        // Next note on same string: typically 1-3 frets up depending on intervals
+        const prevInterval = BONAMASSA_STEPS[(startDeg + noteIndex - 1) % BONAMASSA_STEPS.length];
+        const currentInterval = BONAMASSA_STEPS[d];
+        const stepSize = ((currentInterval - prevInterval + 12) % 12);
+        expectedFret += stepSize <= 3 ? stepSize : 1; // Smart fret spacing
+      }
+
+      const fret = nearestFretForPcOnString(pc, s, expectedFret);
+      expectedFret = fret;
+      
+      // Mark blue notes (♭5)
+      const interval = (pc - keyPc + 12) % 12;
+      const isBlueNote = interval === 6; // ♭5
+      
+      out.push({ 
+        string: s, 
+        fret, 
+        pc, 
+        degreeIdx: d,
+        isBlueNote 
+      });
+      
+      noteIndex++;
+    }
+  }
+
+  return out;
+}
+
+/** Bonamassa 3-notes-per-string pentatonic patterns - compact box shapes */
+export function buildBonamassaExtended(keyPc: number, box: Position5, anchorLowEFret = 5): ScalePoint[] {
+  // Bonamassa uses 3-notes-per-string minor pentatonic patterns
+  // These stay compact in one position, unlike the spreading buildNPerString approach
+  
+  // Check for problematic key/box combinations
+  const isProblematicCase = 
+    (keyPc === 1 && box === 1) ||  // C#/Db Box 2
+    (keyPc === 6 && box === 4) ||  // F#/Gb Box 5
+    (keyPc === 11 && box === 2);   // B Box 3
+  
+  const adjustedAnchor = isProblematicCase ? anchorLowEFret + 5 : anchorLowEFret;
+  
+  // Start with the 2NPS pentatonic pattern to get the base position
+  const basePent = buildPent5(keyPc, box, "minor", adjustedAnchor);
+  
+  // Get the fret range of the base pattern
+  const boxMin = Math.min(...basePent.map(p => p.fret));
+  const boxMax = Math.max(...basePent.map(p => p.fret));
+  
+  // For 3NPS, we need to add one more note per string from the pentatonic scale
+  // staying within a reasonable fret span (typically 4-5 frets)
+  const maxSpan = 6; // Allow slightly more span for 3NPS
+  const effectiveMax = Math.min(boxMax + 2, boxMin + maxSpan);
+  
+  const out: ScalePoint[] = [];
+  
+  // For each string, find 3 notes from the pentatonic scale within the box range
+  for (let s = 0; s < 6; s++) {
+    const openPc = OPEN_STRINGS_PC[s];
+    const notesOnString: ScalePoint[] = [];
+    
+    // Check each fret in the box range
+    for (let fret = boxMin; fret <= effectiveMax; fret++) {
+      const pc = (openPc + fret) % 12;
+      const interval = (pc - keyPc + 12) % 12;
+      
+      // Check if this note is in the minor pentatonic scale
+      const degreeIdx = MINOR_PENT_STEPS.indexOf(interval);
+      if (degreeIdx >= 0) {
+        notesOnString.push({
+          string: s,
+          fret,
+          pc,
+          degreeIdx,
+          isBlueNote: interval === 6 // Mark blue notes (♭5)
+        });
+      }
+    }
+    
+    // Take exactly 3 notes per string (or however many we found)
+    // Prefer notes that are evenly spaced
+    if (notesOnString.length >= 3) {
+      out.push(notesOnString[0], notesOnString[1], notesOnString[2]);
+    } else {
+      out.push(...notesOnString);
+    }
+  }
+  
+  return out;
+}
+
 /** Enhanced CAGED system - shows chord tones within pentatonic patterns */
 export function buildCAGED(keyPc: number, scale: ScaleKind, shape: PositionCAGED): ScalePoint[] {
   // Get pentatonic pattern for the area
@@ -307,6 +436,40 @@ export function buildCAGED(keyPc: number, scale: ScaleKind, shape: PositionCAGED
   });
 }
 
+
+/** Build Bonamassa-style blues patterns for full neck */
+export function buildBonamassaFullNeck(keyPc: number): ScalePoint[] {
+  const out: ScalePoint[] = [];
+  
+  // For each string (0 = low E, 5 = high E)
+  for (let stringIndex = 0; stringIndex < 6; stringIndex++) {
+    const openPc = OPEN_STRINGS_PC[stringIndex];
+    
+    // For each fret from 0 to 24
+    for (let fret = 0; fret <= 24; fret++) {
+      const notePc = (openPc + fret) % 12;
+      
+      // Check if this note is in our Bonamassa scale
+      for (let degreeIdx = 0; degreeIdx < BONAMASSA_STEPS.length; degreeIdx++) {
+        const scalePc = (keyPc + BONAMASSA_STEPS[degreeIdx]) % 12;
+        
+        if (notePc === scalePc) {
+          const interval = (notePc - keyPc + 12) % 12;
+          out.push({
+            string: stringIndex,
+            fret,
+            pc: notePc,
+            degreeIdx,
+            isBlueNote: interval === 6 // Mark ♭5 as blue note
+          });
+          break;
+        }
+      }
+    }
+  }
+  
+  return out;
+}
 
 /** Build full-neck set (all positions) */
 export function buildFullNeck(
