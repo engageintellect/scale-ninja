@@ -23,13 +23,17 @@ An interactive web application for visualizing and learning guitar scales across
 - **Major (Ionian) and Natural Minor (Aeolian)** scales
 - **Harmonic Minor** - Minor scale with natural 7th (1-2-♭3-4-5-♭6-7) - Available in 3NPS mode only
 - **Melodic Minor** - Minor scale with natural 6th and 7th (1-2-♭3-4-5-6-7) - Available in 3NPS mode only
+- **Blues Scale** - Minor pentatonic with added ♭5 (1-♭3-4-♭5-5-♭7)
+- **Bonamassa Blues** - Extended blues scale mixing major/minor (1-2-♭3-3-4-♭5-5-6-♭7)
 - **Minor Pentatonic** (5 boxes) with authentic note patterns
 - **Minor Hexatonic** (Minor Pentatonic + 2nd degree)
 - **Multiple Viewing Modes**:
+  - **Triads** - Traditional playable CAGED triad shapes (major/minor chord voicings)
   - **CAGED System** - 5 chord shapes with triad chord tones highlighted over pentatonic patterns
   - **Pentatonic Boxes** - 5 classic pentatonic positions
   - **3 Notes Per String (3NPS)** - 7 modal positions (Ionian through Locrian) + Harmonic/Melodic Minor
   - **Hexatonic Boxes** - 5 pentatonic boxes with added 2nd degree
+  - **Bonamassa Blues** - Joe Bonamassa-style blues patterns with blue note highlighting
   - **Full Neck View** - All notes in the scale across the entire fretboard (works with all scale types)
 
 ### 🎯 **Smart Controls**
@@ -47,11 +51,20 @@ An interactive web application for visualizing and learning guitar scales across
 - **Visual Feedback** - Hover effects and smooth transitions throughout
 - **Professional Styling** - Modern dark theme with emerald accent colors
 
-### 🔧 **CAGED System Features**
-- **5 Classic Chord Shapes** - E, D, C, A, G positions
-- **Triad Chord Tones** - Root, 3rd, 5th highlighted within pentatonic patterns
-- **Visual Distinction** - Clear separation between chord tones and scale tones
-- **Chord-Scale Relationships** - Perfect for understanding how chords and scales connect
+### 🔧 **Chord & Triad Features**
+- **Triad Shapes Mode** - Traditional playable CAGED chord voicings
+  - 5 moveable triad shapes (E, D, C, A, G)
+  - Color-coded chord tones: Root (green), Third (amber), Fifth (purple)
+  - Works with both major and minor triads
+  - Authentic fingerings based on open chord shapes
+- **CAGED System** - Chord tones highlighted within pentatonic patterns
+  - Root, 3rd, 5th emphasized over scale patterns
+  - Visual distinction between chord tones and scale tones
+  - Perfect for understanding chord-scale relationships
+- **Bonamassa Blues Mode** - Extended blues patterns
+  - Blue notes (♭5) highlighted in blue
+  - Major/minor mixing for authentic blues sound
+  - 5-box system with strategic note additions
 
 ## Getting Started
 
@@ -97,14 +110,23 @@ An interactive web application for visualizing and learning guitar scales across
 2. **Choose a Scale**: 
    - Major and Minor scales (available in all modes)
    - Harmonic Minor and Melodic Minor (3NPS mode only)
+   - Blues scale (Bonamassa mode only)
 3. **Select View Mode**:
-   - 3NPS: Shows 3-notes-per-string patterns (7 positions) + supports all scale types
-   - Full Neck: Displays all notes in the scale across the entire fretboard
-   - Pentatonic: Shows 5 pentatonic box positions (Major/Minor only)
-   - Hexatonic: Shows pentatonic boxes with added 2nd degree (Major/Minor only)
+   - **Triads**: Traditional CAGED chord shapes - select E, D, C, A, or G shape
+   - **CAGED**: Chord tones highlighted over pentatonic patterns
+   - **Pentatonic**: 5 classic pentatonic box positions (Major/Minor)
+   - **3NPS**: 3-notes-per-string patterns (7 modal positions + Harmonic/Melodic Minor)
+   - **Hexatonic**: Pentatonic boxes with added 2nd degree (Major/Minor)
+   - **Bonamassa Blues**: Extended blues patterns with blue note highlighting
+   - **Full Neck**: All notes across the entire fretboard (toggle ON)
 4. **Customize Display**:
    - Toggle between note names and scale degrees
    - Switch between sharp (#) and flat (♭) notation
+   - Click any note to hear it played with realistic guitar tone
+5. **Learn Chord Shapes**:
+   - Use Triads mode to learn moveable chord voicings
+   - Root notes highlighted in green, thirds in amber, fifths in purple
+   - Practice transitioning between the 5 CAGED shapes
 
 ## Architecture
 
@@ -118,7 +140,8 @@ The application is built with a modular component architecture for maintainabili
   - `Field` - Reusable form field wrapper component
 
 - **Core Logic**:
-  - `ScaleEngine` - Scale generation algorithms for all modes (3NPS, pentatonic, hexatonic, full neck)
+  - `ScaleEngine` - Scale generation algorithms for all modes (3NPS, pentatonic, hexatonic, triads, CAGED, Bonamassa blues, full neck)
+  - `AudioEngine` - Web Audio API synthesis for realistic guitar tones
   - `types` - TypeScript definitions and musical constants
 
 ## Technology Stack
