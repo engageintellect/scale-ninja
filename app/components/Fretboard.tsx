@@ -12,7 +12,7 @@ interface FretboardProps {
   scale: ScaleKind;
   labelMode: "note" | "degree";
   useFlats: boolean;
-  mode: "3nps" | "pent5" | "hex5" | "caged" | "bonamassa";
+  mode: "3nps" | "pent5" | "hex5" | "caged" | "bonamassa" | "triads";
   fullNeck?: boolean;
 }
 
@@ -303,22 +303,37 @@ export function Fretboard({
 
           // In CAGED mode, make chord tones larger and with different styling
           // In Bonamassa mode, make blue notes (♭5) stand out
+          // In Triads mode, differentiate root, third, and fifth
           const isChordTone = p.isChordTone;
           const isBlueNote = p.isBlueNote;
+          const isThird = p.isThird;
+          const isFifth = p.isFifth;
           const chordToneMultiplier = isChordTone && mode === "caged" ? 1.3 : 1;
-          const adjustedBubbleR = bubbleR * chordToneMultiplier;
+          const triadMultiplier = mode === "triads" ? 1.2 : 1;
+          const adjustedBubbleR = bubbleR * chordToneMultiplier * triadMultiplier;
           
           let borderStyle = {};
           if (isChordTone && mode === "caged") {
             borderStyle = { border: '2px solid #fff', boxShadow: '0 0 8px rgba(255,255,255,0.5)' };
           } else if (isBlueNote && mode === "bonamassa") {
             borderStyle = { border: '2px solid #3b82f6', boxShadow: '0 0 8px rgba(59,130,246,0.5)' };
+          } else if (mode === "triads") {
+            if (isRoot) {
+              borderStyle = { border: '3px solid #10b981', boxShadow: '0 0 10px rgba(16,185,129,0.6)' };
+            } else if (isThird) {
+              borderStyle = { border: '2px solid #f59e0b', boxShadow: '0 0 8px rgba(245,158,11,0.5)' };
+            } else if (isFifth) {
+              borderStyle = { border: '2px solid #8b5cf6', boxShadow: '0 0 8px rgba(139,92,246,0.5)' };
+            }
           }
 
           return (
             <div
               key={i}
               className={`absolute -translate-x-1/2 -translate-y-1/2 flex items-center justify-center rounded-full text-neutral-100 font-semibold select-none cursor-pointer transition-all duration-200 hover:scale-110 hover:shadow-lg ${
+                isRoot && mode === "triads" ? "bg-emerald-600 hover:bg-emerald-500" :
+                isThird && mode === "triads" ? "bg-amber-600 hover:bg-amber-500" :
+                isFifth && mode === "triads" ? "bg-purple-600 hover:bg-purple-500" :
                 isRoot ? "bg-emerald-500 hover:bg-emerald-400" : 
                 isBlueNote && mode === "bonamassa" ? "bg-blue-500 hover:bg-blue-400" :
                 "bg-zinc-600/90 hover:bg-zinc-500/90"

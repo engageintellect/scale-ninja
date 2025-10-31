@@ -16,6 +16,8 @@ import {
   buildFullNeckScale,
   buildBonamassaExtended,
   buildBonamassaFullNeck,
+  buildTriadShape,
+  buildTriadFullNeck,
 } from "./components/ScaleEngine";
 
 /** Tailwind-only • Player view (low-E at bottom) • Correct 3NPS • 7 positions
@@ -26,7 +28,7 @@ export default function Page() {
   const [selectedKey, setSelectedKey] = useState("A");
   const [selectedScale, setSelectedScale] = useState<ScaleKind>("minor");
   const [selectedMode, setSelectedMode] = useState<
-    "3nps" | "pent5" | "hex5" | "caged" | "bonamassa"
+    "3nps" | "pent5" | "hex5" | "caged" | "bonamassa" | "triads"
   >("3nps");
   const [selectedPosition, setSelectedPosition] = useState<Position>(0);
   const [selectedBox, setSelectedBox] = useState<Position5>(0);
@@ -79,6 +81,9 @@ export default function Page() {
       } else if (selectedMode === "bonamassa") {
         // Use Bonamassa full neck pattern
         pts = buildBonamassaFullNeck(keyPc);
+      } else if (selectedMode === "triads") {
+        // Use triad full neck pattern
+        pts = buildTriadFullNeck(keyPc, selectedScale);
       }
     } else {
       // Single mode: show selected position/box/shape
@@ -92,6 +97,8 @@ export default function Page() {
         pts = buildCAGED(keyPc, selectedScale, selectedCAGEDShape);
       } else if (selectedMode === "bonamassa") {
         pts = buildBonamassaExtended(keyPc, selectedBox);
+      } else if (selectedMode === "triads") {
+        pts = buildTriadShape(keyPc, selectedScale, selectedCAGEDShape);
       }
     }
     

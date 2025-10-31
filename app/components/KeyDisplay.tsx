@@ -14,7 +14,7 @@ import {
 interface KeyDisplayProps {
   selectedKey: string;
   selectedScale: ScaleKind;
-  selectedMode: "3nps" | "full" | "pent5" | "hex5" | "caged" | "bonamassa";
+  selectedMode: "3nps" | "full" | "pent5" | "hex5" | "caged" | "bonamassa" | "triads";
   selectedPosition: Position;
   selectedBox: Position5;
   selectedCAGEDShape: PositionCAGED;
@@ -169,6 +169,32 @@ export function KeyDisplay({
         description: "Bonamassa Blues Scale",
         notes
       };
+    } else if (selectedMode === "triads") {
+      if (selectedScale === "major") {
+        // Major triad: 1, 3, 5
+        const triadSteps = [0, 4, 7];
+        const notes = triadSteps.map(step => {
+          const noteIndex = (keyIndex + step) % 12;
+          return noteNames[noteIndex];
+        });
+        return {
+          formula: "1 - 3 - 5",
+          description: "Major Triad",
+          notes
+        };
+      } else {
+        // Minor triad: 1, ♭3, 5
+        const triadSteps = [0, 3, 7];
+        const notes = triadSteps.map(step => {
+          const noteIndex = (keyIndex + step) % 12;
+          return noteNames[noteIndex];
+        });
+        return {
+          formula: "1 - ♭3 - 5",
+          description: "Minor Triad",
+          notes
+        };
+      }
     } else {
       return {
         ...getScaleInfo(selectedKey, selectedScale),
@@ -223,6 +249,7 @@ export function KeyDisplay({
               {selectedMode === "3nps" && `Position ${selectedPosition + 1}`}
               {(selectedMode === "pent5" || selectedMode === "hex5" || selectedMode === "bonamassa") && `Box ${selectedBox + 1}`}
               {selectedMode === "caged" && `${CAGED_LABELS[selectedCAGEDShape]}`}
+              {selectedMode === "triads" && `${CAGED_LABELS[selectedCAGEDShape]}`}
               {selectedMode === "full" && "Full Neck"}
             </div>
             <div className="text-sm text-neutral-400 mt-1">
@@ -231,10 +258,11 @@ export function KeyDisplay({
               {selectedMode === "hex5" && "Hexatonic Scale"}
               {selectedMode === "bonamassa" && "Bonamassa Blues"}
               {selectedMode === "caged" && "CAGED System"}
+              {selectedMode === "triads" && "Triad Shapes"}
               {selectedMode === "full" && "Complete Fretboard"}
             </div>
             <div className="text-xs text-neutral-500 mt-1 capitalize">
-              {selectedMode === "3nps" ? "3 Notes Per String" : selectedMode === "caged" ? "Chord Shape" : selectedMode.replace(/\d/, " ")} Mode
+              {selectedMode === "3nps" ? "3 Notes Per String" : selectedMode === "caged" ? "Chord Shape" : selectedMode === "triads" ? "Chord Tones" : selectedMode.replace(/\d/, " ")} Mode
             </div>
           </div>
         </div>
@@ -284,6 +312,7 @@ export function KeyDisplay({
               {selectedMode === "3nps" && `Position ${selectedPosition + 1}`}
               {(selectedMode === "pent5" || selectedMode === "hex5" || selectedMode === "bonamassa") && `Box ${selectedBox + 1}`}
               {selectedMode === "caged" && `${CAGED_LABELS[selectedCAGEDShape]}`}
+              {selectedMode === "triads" && `${CAGED_LABELS[selectedCAGEDShape]}`}
               {selectedMode === "full" && "Full Neck"}
             </div>
             <div className="text-sm text-neutral-400">
@@ -292,6 +321,7 @@ export function KeyDisplay({
               {selectedMode === "hex5" && "Hexatonic"}
               {selectedMode === "bonamassa" && "Bonamassa Blues"}
               {selectedMode === "caged" && "CAGED"}
+              {selectedMode === "triads" && "Triad Shapes"}
               {selectedMode === "full" && "All Positions"}
             </div>
             <div className="text-xs text-neutral-500">

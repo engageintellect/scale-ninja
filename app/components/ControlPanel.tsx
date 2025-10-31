@@ -15,8 +15,8 @@ interface ControlPanelProps {
   setSelectedKey: (key: string) => void;
   selectedScale: ScaleKind;
   setSelectedScale: (scale: ScaleKind) => void;
-  selectedMode: "3nps" | "pent5" | "hex5" | "caged" | "bonamassa";
-  setSelectedMode: (mode: "3nps" | "pent5" | "hex5" | "caged" | "bonamassa") => void;
+  selectedMode: "3nps" | "pent5" | "hex5" | "caged" | "bonamassa" | "triads";
+  setSelectedMode: (mode: "3nps" | "pent5" | "hex5" | "caged" | "bonamassa" | "triads") => void;
   selectedPosition: Position;
   setSelectedPosition: (position: Position) => void;
   selectedBox: Position5;
@@ -136,6 +136,7 @@ export function ControlPanel({
         {/* Mode Selection */}
         <Field label="Mode">
           {[
+            { value: "triads", label: "Triads" },
             { value: "caged", label: "CAGED" },
             { value: "pent5", label: "Pentatonic" },
             { value: "3nps", label: "3NPS" },
@@ -145,7 +146,7 @@ export function ControlPanel({
             <button
               key={value}
               onClick={() =>
-                setSelectedMode(value as "3nps" | "pent5" | "hex5" | "caged" | "bonamassa")
+                setSelectedMode(value as "3nps" | "pent5" | "hex5" | "caged" | "bonamassa" | "triads")
               }
               className={`px-4 py-2 rounded text-sm font-medium transition-all duration-200 transform hover:scale-105 active:scale-95 ${
                 selectedMode === value
@@ -196,8 +197,8 @@ export function ControlPanel({
           </Field>
         )}
 
-        {/* CAGED Shape Selection */}
-        {selectedMode === "caged" && (
+        {/* CAGED/Triad Shape Selection */}
+        {(selectedMode === "caged" || selectedMode === "triads") && (
           <Field label="Shape">
             {[
               { label: "E Shape", index: 0 },

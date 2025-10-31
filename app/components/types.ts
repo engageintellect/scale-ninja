@@ -108,4 +108,7 @@ export interface ScalePoint {
   degreeIdx: number; // index into the scale steps array
   isChordTone?: boolean; // true if this note is part of the chord triad (for CAGED mode)
   isBlueNote?: boolean; // true if this is a blue note (♭5) in Bonamassa mode
+  isRoot?: boolean; // true if this is the root note
+  isThird?: boolean; // true if this is the third (major or minor)
+  isFifth?: boolean; // true if this is the fifth
 }

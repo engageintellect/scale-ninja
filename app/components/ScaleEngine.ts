@@ -491,3 +491,139 @@ export function buildFullNeck(
   }
   return out;
 }
+
+/** Build a single triad shape (CAGED-style) for a given position */
+export function buildTriadShape(
+  keyPc: number,
+  scale: ScaleKind,
+  shape: PositionCAGED
+): ScalePoint[] {
+  // Traditional CAGED triad shapes - playable chord voicings
+  // String numbering: 0=low E, 1=A, 2=D, 3=G, 4=B, 5=high E
+  
+  const thirdInterval = scale === "major" ? 4 : 3;
+  
+  // Define each CAGED shape with actual playable voicings
+  const triadShapes: { [key: number]: Array<{ string: number; interval: number; fretOffset: number }> } = {
+    // E-shape: Root on 6th string (like open E chord)
+    0: [
+      { string: 0, interval: 0, fretOffset: 0 },   // Root on low E
+      { string: 1, interval: 7, fretOffset: 2 },   // 5th on A string
+      { string: 2, interval: 0, fretOffset: 2 },   // Root on D string
+      { string: 3, interval: thirdInterval, fretOffset: 1 }, // 3rd on G string
+      { string: 4, interval: 7, fretOffset: 0 },   // 5th on B string
+      { string: 5, interval: 0, fretOffset: 0 },   // Root on high E
+    ],
+    // D-shape: Root on 4th string (like open D chord)
+    1: [
+      { string: 2, interval: 0, fretOffset: 0 },   // Root on D string
+      { string: 3, interval: 7, fretOffset: 2 },   // 5th on G string
+      { string: 4, interval: 0, fretOffset: 3 },   // Root on B string
+      { string: 5, interval: thirdInterval, fretOffset: 2 }, // 3rd on high E
+    ],
+    // C-shape: Root on 5th string (like open C chord)
+    2: [
+      { string: 1, interval: 0, fretOffset: 0 },   // Root on A string
+      { string: 2, interval: 7, fretOffset: 2 },   // 5th on D string
+      { string: 3, interval: 0, fretOffset: 2 },   // Root on G string
+      { string: 4, interval: thirdInterval, fretOffset: 1 }, // 3rd on B string
+      { string: 5, interval: 7, fretOffset: 0 },   // 5th on high E
+    ],
+    // A-shape: Root on 5th string (like open A chord)
+    3: [
+      { string: 1, interval: 0, fretOffset: 0 },   // Root on A string
+      { string: 2, interval: thirdInterval, fretOffset: 2 }, // 3rd on D string
+      { string: 3, interval: 7, fretOffset: 2 },   // 5th on G string
+      { string: 4, interval: 0, fretOffset: 2 },   // Root on B string
+    ],
+    // G-shape: Root on 6th string (like open G chord)
+    4: [
+      { string: 0, interval: 0, fretOffset: 0 },   // Root on low E
+      { string: 1, interval: 7, fretOffset: 2 },   // 5th on A string
+      { string: 2, interval: 0, fretOffset: 3 },   // Root on D string
+      { string: 3, interval: thirdInterval, fretOffset: 0 }, // 3rd on G string
+      { string: 4, interval: 7, fretOffset: 0 },   // 5th on B string
+      { string: 5, interval: 0, fretOffset: 3 },   // Root on high E
+    ],
+  };
+
+  const shapeTemplate = triadShapes[shape];
+  
+  // Find the root note position for this shape
+  const rootNote = shapeTemplate.find(n => n.interval === 0);
+  if (!rootNote) return [];
+  
+  // Calculate where the root should be on the fretboard
+  const rootFret = nearestFretForPcOnString(keyPc, rootNote.string, shape * 3);
+  
+  const out: ScalePoint[] = [];
+  
+  // Build the shape relative to the root position
+  for (const note of shapeTemplate) {
+    const { string: stringIdx, interval, fretOffset } = note;
+    
+    // Calculate actual interval (adjust for major/minor third)
+    let actualInterval = interval;
+    if (interval === 4 && scale === "minor") {
+      actualInterval = 3;
+    }
+    
+    const targetPc = (keyPc + actualInterval) % 12;
+    
+    // Calculate fret position relative to root
+    const baseFret = rootFret + fretOffset;
+    const fret = nearestFretForPcOnString(targetPc, stringIdx, baseFret);
+    
+    out.push({
+      string: stringIdx,
+      fret,
+      pc: targetPc,
+      degreeIdx: actualInterval === 0 ? 0 : actualInterval === 3 || actualInterval === 4 ? 1 : 2,
+      isRoot: actualInterval === 0,
+      isThird: actualInterval === 3 || actualInterval === 4,
+      isFifth: actualInterval === 7,
+      isChordTone: true,
+    });
+  }
+  
+  return out;
+}
+
+/** Build all triad notes across the full neck */
+export function buildTriadFullNeck(
+  keyPc: number,
+  scale: ScaleKind
+): ScalePoint[] {
+  const triadIntervals = scale === "major" 
+    ? [0, 4, 7]  // Major triad: root, major 3rd, perfect 5th
+    : [0, 3, 7]; // Minor triad: root, minor 3rd, perfect 5th
+  
+  const out: ScalePoint[] = [];
+  
+  // For each string
+  for (let stringIndex = 0; stringIndex < 6; stringIndex++) {
+    const openPc = OPEN_STRINGS_PC[stringIndex];
+    
+    // For each fret from 0 to 24
+    for (let fret = 0; fret <= 24; fret++) {
+      const notePc = (openPc + fret) % 12;
+      const interval = (notePc - keyPc + 12) % 12;
+      
+      // Check if this note is in the triad
+      if (triadIntervals.includes(interval)) {
+        out.push({
+          string: stringIndex,
+          fret,
+          pc: notePc,
+          degreeIdx: interval === 0 ? 0 : interval === 3 || interval === 4 ? 1 : 2,
+          isRoot: interval === 0,
+          isThird: interval === 3 || interval === 4,
+          isFifth: interval === 7,
+          isChordTone: true,
+        });
+      }
+    }
+  }
+  
+  return out;
+}
